@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <iostream>
 #include <fstream>
 #include <mutex>
 
@@ -10,9 +11,12 @@ class FileLogger {
 
     public:
 
-    FileLogger() = delete;
+    FileLogger() = default;
     FileLogger(const std::string& filename);
     ~FileLogger();
+
+    // if false, the file is already opened
+    bool open(const std::string& filename);
 
     void write(
         const std::string& message, 
