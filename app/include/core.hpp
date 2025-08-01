@@ -34,11 +34,17 @@ class Core {
     ~Core() = default;
 
     void switchDefaultPriority(const common::Priority&);
+    void switchLoggingDestination();
+
+    common::Priority getDefaultPriority();
+    bool isLoggingToFile();
 
     void log(const std::string&);
 
     private:
 
+    // doesn't make a lot of sense outside the class, hence
+    // declared here
     struct handledInput {
         std::string message;
         std::string priority;
@@ -46,6 +52,7 @@ class Core {
     handledInput handleInput(const std::string&);
 
     bool initialized = false;
+    bool file_logging = true;
 
     FileLogger fileLogger;
     common::CoreConfig config;

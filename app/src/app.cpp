@@ -32,13 +32,48 @@ void App::run() {
 
         std::getline(std::cin, input);
 
+        if(commandFilter(input)) continue;
+
         pool.queue(&Core::log, std::ref(core), input);
 
         input = "";
     }
 }
 
-const void App::instructions() const {
+// this one will return true if input was special;
+// special input won't be logged
+bool App::commandFilter(const std::string& input) {
+    if (input == "-p") {
+        specifyPriority();
+        return true; // was a special input
+    }
+
+    if (input == "-t") {
+        core.switchLoggingDestination();
+        return true; // was a special input
+    }
+
+    return false; // was NOT a special input
+}
+
+// override default priority
+void App::specifyPriority() {
+    std::cout << "\n\tSpecify new default priority [r/i/c]: ";
+    std::string new_priority;
+    std::getline(std::cin, new_priority);
+
+    if(new_priority.length() != 1) return;
+
+    auto c = new_priority.front();
+    auto valid = common::validatePriority(c);
+
+    if (!valid) return;
+
+    core.switchDefaultPriority(common::charToPriority(c));
+    return;
+}
+
+void App::instructions() {
     // clear screen
     #ifdef _WIN32 // windows
         system("cls");
@@ -47,7 +82,8 @@ const void App::instructions() const {
     #endif
 
     std::cout << "\n";
-    std::cout << "\tCurrently logging to: " << (file_logging ? "file.\n\n" : "socket.\n\n");
+    std::cout << "\tCurrently logging to: " << (core.isLoggingToFile() ? "file.\n" : "socket.\n");
+    std::cout << "\tDefault priority: " << common::priorityToString(core.getDefaultPriority()) << "\n\n";
     std::cout << "\tUnique commands:\n";
     std::cout << "\t-p // change default priority;\n";
     std::cout << "\t-t // switch logging destination (file/socket);\n\n";

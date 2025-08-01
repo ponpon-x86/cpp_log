@@ -33,11 +33,6 @@ void Core::init(const common::CoreConfig& config) {
     }
 }
 
-// change default priority
-void Core::switchDefaultPriority(const common::Priority& priority) {
-    this->config.priority = priority;
-}
-
 Core::handledInput Core::handleInput(const std::string& input) {
     handledInput handled;
 
@@ -93,3 +88,20 @@ void Core::log(const std::string& input) {
 
     // else the message will be discarded -- tough luck
 }
+
+// short ones
+void Core::switchDefaultPriority(const common::Priority& priority) {
+    this->config.priority = priority;
+}
+
+void Core::switchLoggingDestination() { 
+    file_logging = !file_logging; 
+};
+
+common::Priority Core::getDefaultPriority() { 
+    return config.priority; 
+};
+
+bool Core::isLoggingToFile() { 
+    return file_logging; 
+};

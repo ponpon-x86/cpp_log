@@ -18,13 +18,16 @@ class App {
     private:
 
     void run();
+    bool commandFilter(const std::string&);
 
-    const void instructions() const;
+    void instructions();
+
+    // these call correlating core methods
+    void specifyPriority();
 
     Pool pool;
     Checker checker;
     Core core;
 
     bool running = true;
-    bool file_logging = true;
 };
