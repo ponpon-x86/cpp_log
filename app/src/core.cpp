@@ -66,26 +66,30 @@ Core::handledInput Core::handleInput(const std::string& input) {
     return handled;
 }
 
-#include <fstream>
 // log message
 void Core::log(const std::string& input) {
+    // regex-match the user input
     auto handled = handleInput(input);
     auto validation = handled.priority.empty() ? false : common::validatePriority(handled.priority);
 
-    if (validation) {
+    // if there was no priority provided, just log with default priority
+    if (handled.priority.empty()) {
+        fileLogger.write(handled.message, this->config.priority);
+        return;
+    } 
+    
+    // if not, then
+    // validate whether the set priority is real, 
+    auto valid = common::validatePriority(handled.priority);
+    if (valid) {
+        // and get priority object
         auto p = handled.priority.front();
         auto p_obj = common::charToPriority(p);
-
+        // if validated priority is higher or same as default, write to file
         if (p_obj >= this->config.priority) {
             fileLogger.write(handled.message, common::charToPriority(p));
-            std::ofstream file("mogus.txt");
-            file << "message: [" << handled.message << "], priority: [" << handled.priority << "]";
-            file.close();
         }
-    } else {
-        fileLogger.write(handled.message, this->config.priority);
-        std::ofstream file("focus.txt");
-        file << "message: [" << handled.message << "], priority: [" << handled.priority << "]";
-        file.close();
     }
+
+    // else the message will be discarded -- tough luck
 }

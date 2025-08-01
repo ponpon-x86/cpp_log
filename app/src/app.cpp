@@ -32,7 +32,7 @@ void App::run() {
 
         std::getline(std::cin, input);
 
-        pool.queue(&Core::log, &core, input);
+        pool.queue(&Core::log, std::ref(core), input);
 
         input = "";
     }
