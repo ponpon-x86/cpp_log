@@ -53,6 +53,11 @@ bool App::commandFilter(const std::string& input) {
         return true; // was a special input
     }
 
+    if (input == "exit") {
+        running = false;
+        return true; // was a special input
+    }
+
     return false; // was NOT a special input
 }
 
@@ -85,6 +90,7 @@ void App::instructions() {
     std::cout << "\tCurrently logging to: " << (core.isLoggingToFile() ? "file.\n" : "socket.\n");
     std::cout << "\tDefault priority: " << common::priorityToString(core.getDefaultPriority()) << "\n\n";
     std::cout << "\tUnique commands:\n";
+    std::cout << "\texit // exit;\n";
     std::cout << "\t-p // change default priority;\n";
     std::cout << "\t-t // switch logging destination (file/socket);\n\n";
     std::cout << "\tGeneral use:\n";
