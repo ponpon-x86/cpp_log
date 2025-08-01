@@ -11,6 +11,7 @@
 
 #include "structs.h"
 #include "file_logger.hpp"
+#include "socket_logger.hpp"
 
 class Core {
 
@@ -19,8 +20,8 @@ class Core {
     /*
     it's possible to use constructor initializer list
     */
-    Core(const std::string&, const common::Priority&);
-    Core(const common::CoreConfig&);
+    Core(const std::string&, const common::Priority&, const unsigned short& port = 0);
+    Core(const common::CoreConfig&, const unsigned short& port = 0);
 
     /*
     but also,
@@ -28,8 +29,8 @@ class Core {
     create a default core object, and initialize it later.
     */
     Core() = default;
-    void init(const std::string&, const common::Priority&);
-    void init(const common::CoreConfig&);
+    void init(const std::string&, const common::Priority&, const unsigned short& port = 0);
+    void init(const common::CoreConfig&, const unsigned short& port = 0);
     
     ~Core() = default;
 
@@ -55,5 +56,9 @@ class Core {
     bool file_logging = true;
 
     FileLogger fileLogger;
+    SocketLogger socketLogger;
+
+    const short unsigned default_port = 60420;
+
     common::CoreConfig config;
 };

@@ -20,6 +20,7 @@ checker(argc, argv) {
     }
     
     // initialize core
+    // default port for the core
     core.init(common::composeConfig(argv[1], argv[2]));
     run();
 }

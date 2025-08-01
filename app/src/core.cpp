@@ -2,26 +2,26 @@
 
 // constuctors
 
-Core::Core(const std::string& filename, const common::Priority& priority) :
-fileLogger(filename) {
+Core::Core(const std::string& filename, const common::Priority& priority, const unsigned short& port) :
+fileLogger(filename), socketLogger(port == 0 ? default_port : port) {
     this->config = { filename , priority };
     initialized = true;
 }
 
-Core::Core(const common::CoreConfig& config) :
-fileLogger(config.log_file_name) {
+Core::Core(const common::CoreConfig& config, const unsigned short& port) :
+fileLogger(config.log_file_name), socketLogger(port == 0 ? default_port : port) {
     this->config = config;
     initialized = true;
 }
 
 // methods
 // in case default constructor was used, the core needs to be initialized
-void Core::init(const std::string& filename, const common::Priority& priority) {
+void Core::init(const std::string& filename, const common::Priority& priority, const unsigned short& port) {
     // just call the function which takes config arg.
-    init ( { filename , priority } );
+    init ( { filename , priority }, port );
 }
 
-void Core::init(const common::CoreConfig& config) {
+void Core::init(const common::CoreConfig& config, const unsigned short& port) {
     if (initialized) {
         std::cout << "\tThe core is already initialized.\n";
         return;
@@ -31,6 +31,8 @@ void Core::init(const common::CoreConfig& config) {
     if(!fileLogger.open(config.log_file_name)) {
         std::cout << "\tA file is already open.\n";
     }
+
+    socketLogger.init(port == 0 ? default_port : port);
 }
 
 Core::handledInput Core::handleInput(const std::string& input) {
