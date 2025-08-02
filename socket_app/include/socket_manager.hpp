@@ -24,14 +24,28 @@ class SocketManager {
     SocketManager(const std::string& ip, const unsigned short& port);
     ~SocketManager();
 
+    enum class SocketOperationResult {
+        EXISTS,
+        SUCCESS,
+        FAILURE
+    };
+
+    enum class RecvResult {
+        INVALID_S,
+        S_ERROR,
+        C_CLOSED,
+        SUCCESS
+    };
+
     // starts up the socket thing, fills the addr info
-    void init(const std::string& ip, const unsigned short& port);
-    void establishConnection();
-    // this one will be getting messages in an infinite loop, since recv is blocking.
-    void receiveMessages();
+    bool init(const std::string& ip, const unsigned short& port);
+    SocketOperationResult establishConnection();
+    // first is a flag, second is the message
+    std::pair<RecvResult, std::string> receiveMessages();
     void closeSocket();
-    bool hasConnection() { return connection_socket != INVALID_SOCKET; };
-    void createSocket();
+    bool hasSocket() { return connection_socket != INVALID_SOCKET; };
+    bool hasConnection() { return connected; };
+    SocketOperationResult createSocket();
 
     private:
 

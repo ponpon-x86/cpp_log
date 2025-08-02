@@ -12,24 +12,28 @@ SocketManager::~SocketManager() {
     WSACleanup();
 }
 
-void SocketManager::createSocket() {
-    if (hasConnection()) {
-        return;
+SocketManager::SocketOperationResult
+SocketManager::createSocket() {
+    if (hasSocket()) {
+        return SocketOperationResult::EXISTS;
     }
 
-    std::cout << "\tTrying to create a connection socket...\n";
+    // std::cout << "\tTrying to create a connection socket...\n";
     connection_socket = INVALID_SOCKET;
     connection_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (connection_socket == INVALID_SOCKET) {
         std::cout << "\tFailed to create a socket.\n";
+        return SocketOperationResult::FAILURE;
     }
     std::cout << "\tCreated a socket.\n";
+    return SocketOperationResult::SUCCESS;
 }
 
-void SocketManager::init(const std::string& ip, const unsigned short& port) {
+bool SocketManager::init(const std::string& ip, const unsigned short& port) {
     if (!ready) {
         if (WSAStartup(MAKEWORD(2, 2), &wsa_data) != 0) {
             std::cout << "\tWSAStartup failed.\n";
+            return false;
         }
 
         client_addr.sin_family = AF_INET;
@@ -39,20 +43,24 @@ void SocketManager::init(const std::string& ip, const unsigned short& port) {
         // createSocket();
     }
     ready = true;
+    return true;
 }
 
-void SocketManager::establishConnection() {
+SocketManager::SocketOperationResult
+ SocketManager::establishConnection() {
     if (connected) {
-        return;
+        return SocketOperationResult::EXISTS;
     }
 
     std::cout << "\tTrying to establish connection...\n";
     if (connect(connection_socket, (sockaddr*)&client_addr, sizeof(client_addr) == SOCKET_ERROR)) {
         std::cout << "\tFailed to establish connection.\n";
         connected = false;
+        return SocketOperationResult::FAILURE;
     }
     connected = true;
     std::cout << "\tConnection established.\n";
+    return SocketOperationResult::SUCCESS;
 }
 
 void SocketManager::closeSocket() {
@@ -66,21 +74,26 @@ void SocketManager::closeSocket() {
     std::cout << "\tAttempted to close socket, but it's already invalid.\n";
 }
 
-void SocketManager::receiveMessages() {
-    if (!hasConnection()) {
-        std::cout << "\tAttempted to recieve messages, yet the socket is invalid. Aborting.\n";
-        return;
+std::pair<SocketManager::RecvResult, std::string>
+SocketManager::receiveMessages() {
+    if (!hasSocket()) {
+        // std::cout << "\tAttempted to recieve messages, yet the socket is invalid. Aborting.\n";
+        return { RecvResult::INVALID_S , "" } ;
     }
 
     auto recv_result = recv(connection_socket, recvbuf, sizeof(recvbuf), 0);
     if (recv_result == SOCKET_ERROR) {
-        std::cout << "\tSocket error:\n";
-        std::cout << WSAGetLastError() << "\n";
         closeSocket();
+        std::string error = std::to_string(WSAGetLastError());
+        return { RecvResult::S_ERROR , error } ;
     }
     if (recv_result == 0) {
-        std::cout << "\tConnection closed.\n";
+        // std::cout << "\tConnection closed.\n";
         closeSocket();
+        return { RecvResult::C_CLOSED , "" } ;
     }
-    std::cout << "\tBytes received: " << recv_result << "\nReceived data: " << recvbuf << "\n";
+    recvbuf[recv_result] = '\0';
+    std::string message = recvbuf;
+    // std::cout << "\tBytes received: " << recv_result << "\nReceived data: " << recvbuf << "\n";
+    return { RecvResult::SUCCESS , message } ;
 }
