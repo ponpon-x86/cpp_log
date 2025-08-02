@@ -85,12 +85,14 @@ void Statistician::startClock() {
 }
 
 void Statistician::resetClock() { 
-    start_time = end_time = std::chrono::steady_clock::now(); 
+    start_time = end_time = Clock::now(); 
 }
 
-long long Statistician::getClockDif() { 
+long long Statistician::getClockDif() {
     return std::chrono::duration_cast<std::chrono::seconds>(end_time - start_time).count();
 }
+
+#include <iostream>
 
 bool Statistician::shouldUpdate(long long& mtu, long long& timeout) { 
     bool should = false;
@@ -101,7 +103,7 @@ bool Statistician::shouldUpdate(long long& mtu, long long& timeout) {
 
     end_time = Clock::now();
 
-    if (timeout - getClockDif() >= 5) {
+    if (timeout - getClockDif() <= 0) {
         resetClock();
         should = true;
     }

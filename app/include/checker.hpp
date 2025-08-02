@@ -2,6 +2,7 @@
 
 #include <string>
 #include <cctype>
+#include <regex>
 
 #include "structs.h"
 
@@ -17,6 +18,9 @@ class Checker {
     const std::string getExplaination() const { return explaination; };
 
     private:
+
+    bool checkDefault(const std::string);
+    bool checkIpPort(const std::string&);
 
     bool passed_checks = false;
     void composeMessage();

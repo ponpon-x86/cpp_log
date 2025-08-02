@@ -2,26 +2,26 @@
 
 // constuctors
 
-Core::Core(const std::string& filename, const common::Priority& priority, const unsigned short& port) :
-file_logger(filename), socket_logger(port == 0 ? default_port : port) {
+Core::Core(const std::string& filename, const common::Priority& priority, const std::string& ip, const unsigned short& port) :
+file_logger(filename), socket_logger(ip == "" ? default_ip : ip, port == 0 ? default_port : port) {
     this->config = { filename , priority };
     initialized = true;
 }
 
-Core::Core(const common::CoreConfig& config, const unsigned short& port) :
-file_logger(config.log_file_name), socket_logger(port == 0 ? default_port : port) {
+Core::Core(const common::CoreConfig& config, const std::string& ip, const unsigned short& port) :
+file_logger(config.log_file_name), socket_logger(ip == "" ? default_ip : ip, port == 0 ? default_port : port) {
     this->config = config;
     initialized = true;
 }
 
 // methods
 // in case default constructor was used, the core needs to be initialized
-void Core::init(const std::string& filename, const common::Priority& priority, const unsigned short& port) {
+void Core::init(const std::string& filename, const common::Priority& priority, const std::string& ip, const unsigned short& port) {
     // just call the function which takes config arg.
-    init ( { filename , priority }, port );
+    init ( { filename , priority }, ip, port );
 }
 
-void Core::init(const common::CoreConfig& config, const unsigned short& port) {
+void Core::init(const common::CoreConfig& config, const std::string& ip, const unsigned short& port) {
     if (initialized) {
         std::cout << "\tThe core is already initialized.\n";
         return;
@@ -32,7 +32,7 @@ void Core::init(const common::CoreConfig& config, const unsigned short& port) {
         std::cout << "\tA file is already open.\n";
     }
 
-    socket_logger.init(port == 0 ? default_port : port);
+    socket_logger.init(ip == "" ? default_ip : ip, port == 0 ? default_port : port);
 }
 
 Core::handledInput Core::handleInput(const std::string& input) {
@@ -71,7 +71,11 @@ void Core::log(const std::string& input) {
 
     // if there was no priority provided, just log with default priority
     if (handled.priority.empty()) {
-        file_logger.write(handled.message, this->config.priority);
+
+        if(file_logging)
+            file_logger.write(handled.message, this->config.priority);
+        else socket_logger.write(handled.message, this->config.priority);
+
         return;
     } 
     
@@ -84,7 +88,11 @@ void Core::log(const std::string& input) {
         auto p_obj = common::charToPriority(p);
         // if validated priority is higher or same as default, write to file
         if (p_obj >= this->config.priority) {
-            file_logger.write(handled.message, common::charToPriority(p));
+            
+            if(file_logging)
+                file_logger.write(handled.message, common::charToPriority(p));
+            else socket_logger.write(handled.message, common::charToPriority(p));
+
         }
     }
 

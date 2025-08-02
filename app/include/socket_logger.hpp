@@ -24,12 +24,12 @@ class SocketLogger {
     public:
 
     SocketLogger() = default;
-    SocketLogger(const unsigned short&);
+    SocketLogger(const std::string&, const unsigned short&);
     ~SocketLogger();
 
     void waitForClient();
     void write(const std::string&, const common::Priority&);
-    void init(const unsigned short& port);
+    void init(const std::string& ip, const unsigned short& port);
 
     bool hasClient() { return client_socket != INVALID_SOCKET; };
     void closeClient();

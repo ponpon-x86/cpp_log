@@ -58,6 +58,7 @@ class SocketManager {
         sockaddr_in client_addr = {};
         WSADATA wsa_data;
         SOCKET connection_socket;
+        std::string ip;
         unsigned short port;
     #endif
 

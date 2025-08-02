@@ -2,20 +2,23 @@
 
 #ifdef _WIN32
 
-SocketLogger::SocketLogger(const unsigned short& port) :
+SocketLogger::SocketLogger(const std::string& ip, const unsigned short& port) :
 port(port), client_socket(INVALID_SOCKET), listen_socket(INVALID_SOCKET) {
-    init(port);
+    init(ip, port);
 }
 
-void SocketLogger::init(const unsigned short& port) {
+void SocketLogger::init(const std::string& ip, const unsigned short& port) {
     if (!ready) {
         if (WSAStartup(MAKEWORD(2, 2), &wsa_data) != 0) {
             std::cout << "\tWSAStartup failed.\n";
         }
 
         server_addr.sin_family = AF_INET;
-        server_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
+        InetPton(AF_INET, ip.c_str(), &server_addr.sin_addr.s_addr);
         server_addr.sin_port = htons(port);
+        
+        client_socket = INVALID_SOCKET;
+        listen_socket = INVALID_SOCKET;
 
         setupListeningSocket();
     }

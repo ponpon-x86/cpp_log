@@ -20,8 +20,8 @@ class Core {
     /*
     it's possible to use constructor initializer list
     */
-    Core(const std::string&, const common::Priority&, const unsigned short& port = 0);
-    Core(const common::CoreConfig&, const unsigned short& port = 0);
+    Core(const std::string&, const common::Priority&, const std::string& ip = "", const unsigned short& port = 0);
+    Core(const common::CoreConfig&, const std::string& ip = "", const unsigned short& port = 0);
 
     /*
     but also,
@@ -29,8 +29,8 @@ class Core {
     create a default core object, and initialize it later.
     */
     Core() = default;
-    void init(const std::string&, const common::Priority&, const unsigned short& port = 0);
-    void init(const common::CoreConfig&, const unsigned short& port = 0);
+    void init(const std::string&, const common::Priority&, const std::string& ip = "", const unsigned short& port = 0);
+    void init(const common::CoreConfig&, const std::string& ip = "", const unsigned short& port = 0);
     
     ~Core() = default;
 
@@ -58,6 +58,7 @@ class Core {
     FileLogger file_logger;
     SocketLogger socket_logger;
 
+    const std::string default_ip = "127.0.0.1";
     const short unsigned default_port = 60420;
 
     common::CoreConfig config;

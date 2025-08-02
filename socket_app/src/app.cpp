@@ -95,6 +95,10 @@ void App::socketThreadJob() {
 void App::run() { 
     socket_thead = std::thread(&App::socketThreadJob, this);
     statistician.startClock();
+    #ifdef _WIN32 // windows
+        system("cls");
+    #endif
+
     while (true) {
         info();
         displayState();
@@ -104,10 +108,20 @@ void App::run() {
 }
 
 void App::info() {
-    std::cout << "\tConnection parameters:\n";
+    // clear screen
+    #ifdef _WIN32 // windows
+        // system("cls");
+        HANDLE hStdout = GetStdHandle(STD_OUTPUT_HANDLE); // Get a handle to the console output
+        COORD position = {0, 0}; // Define the desired cursor coordinates
+        SetConsoleCursorPosition(hStdout, position);
+    #else // will assume unix-based whatever.
+        system("clear");
+    #endif
+
+    std::cout << "\n\tConnection parameters:\n";
     std::cout << "\tTrying to connect to: " << net_data.ip << ":" << net_data.port << "\n";
     std::cout << "\tMessages to statistics update: " << messages_left << " (set to " << net_data.mtu << " messages)\n";
-    std::cout << "\tSeconds to statistics update: " << statistician.getClockDif() << " (set to " << net_data.timeout << "s)\n\n";
+    std::cout << "\tSeconds to statistics update: " << std::stoi(this->net_data.timeout) - statistician.getClockDif() << " (set to " << net_data.timeout << "s)\n\n";
     std::cout << "\tLast message:\n";
     {
         std::unique_lock<std::mutex> lock(mutex);
