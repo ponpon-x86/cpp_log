@@ -3,13 +3,13 @@
 // constuctors
 
 Core::Core(const std::string& filename, const common::Priority& priority, const unsigned short& port) :
-fileLogger(filename), socketLogger(port == 0 ? default_port : port) {
+file_logger(filename), socket_logger(port == 0 ? default_port : port) {
     this->config = { filename , priority };
     initialized = true;
 }
 
 Core::Core(const common::CoreConfig& config, const unsigned short& port) :
-fileLogger(config.log_file_name), socketLogger(port == 0 ? default_port : port) {
+file_logger(config.log_file_name), socket_logger(port == 0 ? default_port : port) {
     this->config = config;
     initialized = true;
 }
@@ -28,11 +28,11 @@ void Core::init(const common::CoreConfig& config, const unsigned short& port) {
     }
 
     this->config = config;
-    if(!fileLogger.open(config.log_file_name)) {
+    if(!file_logger.open(config.log_file_name)) {
         std::cout << "\tA file is already open.\n";
     }
 
-    socketLogger.init(port == 0 ? default_port : port);
+    socket_logger.init(port == 0 ? default_port : port);
 }
 
 Core::handledInput Core::handleInput(const std::string& input) {
@@ -71,7 +71,7 @@ void Core::log(const std::string& input) {
 
     // if there was no priority provided, just log with default priority
     if (handled.priority.empty()) {
-        fileLogger.write(handled.message, this->config.priority);
+        file_logger.write(handled.message, this->config.priority);
         return;
     } 
     
@@ -84,7 +84,7 @@ void Core::log(const std::string& input) {
         auto p_obj = common::charToPriority(p);
         // if validated priority is higher or same as default, write to file
         if (p_obj >= this->config.priority) {
-            fileLogger.write(handled.message, common::charToPriority(p));
+            file_logger.write(handled.message, common::charToPriority(p));
         }
     }
 

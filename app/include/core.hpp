@@ -55,8 +55,8 @@ class Core {
     bool initialized = false;
     bool file_logging = true;
 
-    FileLogger fileLogger;
-    SocketLogger socketLogger;
+    FileLogger file_logger;
+    SocketLogger socket_logger;
 
     const short unsigned default_port = 60420;
 
