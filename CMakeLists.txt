@@ -14,4 +14,5 @@ set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR})
 option(BUILD_SHARED_LIBS "Build shared libraries (.dll/.so) instead of static ones (.lib/.a)" ON)
 
 # add_subdirectory(lib) # not yet
+add_subdirectory(socket_app)
 add_subdirectory(app)
