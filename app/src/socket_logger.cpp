@@ -1,5 +1,4 @@
 #include "socket_logger.hpp"
-
 #ifdef _WIN32
 
 SocketLogger::SocketLogger(const std::string& ip, const unsigned short& port) :

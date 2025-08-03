@@ -112,19 +112,12 @@ void App::run() {
 }
 
 void App::goToXY(short x, short y) {
-    HANDLE hStdout = GetStdHandle(STD_OUTPUT_HANDLE); // Get a handle to the console output
-    COORD position = {x, y}; // Define the desired cursor coordinates
-    SetConsoleCursorPosition(hStdout, position);
+    std::cout << "\033[" + std::to_string(x) + ";" + std::to_string(y) + "H"; 
 }
 
 void App::info() {
-    // clear screen
-    #ifdef _WIN32 // windows
-        // system("cls");
-        goToXY(0, 0);
-    #else // will assume unix-based whatever.
-        system("clear");
-    #endif
+    // clear screen (interestingly)
+    goToXY(0, 0);
 
     std::cout << "\n\tParameters:\n";
     std::cout << "\33[2K\r" << "\tTrying to connect to: " << net_data.ip << ":" << net_data.port << "\n";

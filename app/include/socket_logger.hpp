@@ -1,4 +1,5 @@
 #pragma once
+#ifdef _WIN32
 
 /*
 
@@ -11,11 +12,9 @@ socket instruments
 
 #include "structs.h"
 
-#ifdef _WIN32
-    #include <winsock2.h>
-    #include <ws2tcpip.h>
-    #pragma comment(lib, "ws2_32.lib") // link with ws2_32.lib
-#endif
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#pragma comment(lib, "ws2_32.lib") // link with ws2_32.lib
 
 #include <iostream>
 #include <mutex>
@@ -50,13 +49,11 @@ class SocketLogger {
     };
     void closeClient();
 
-    #ifdef _WIN32
-        sockaddr_in server_addr = {};
-        WSADATA wsa_data;
-        SOCKET listen_socket;
-        SOCKET client_socket;
-        unsigned short port;
-    #endif
+    sockaddr_in server_addr = {};
+    WSADATA wsa_data;
+    SOCKET listen_socket;
+    SOCKET client_socket;
+    unsigned short port;
 
     char pingbuf[512] = {0}; // init with null bytes
     const int message_length = 512;
@@ -64,3 +61,5 @@ class SocketLogger {
     std::mutex mutex;
 
 };
+
+#endif

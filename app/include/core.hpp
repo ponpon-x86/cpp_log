@@ -11,7 +11,9 @@
 
 #include "structs.h"
 #include "file_logger.hpp"
+
 #include "socket_logger.hpp"
+#include "linux_socket_logger.hpp"
 
 class Core {
 
@@ -62,6 +64,12 @@ class Core {
     bool file_logging = true;
 
     FileLogger file_logger;
+    /*
+    so since it is required to use nothing but stl,
+    something like boost asio is not the choise,
+    and the best guess is to resort to default windows/linux
+    socket instruments
+    */
     SocketLogger socket_logger;
 
     const std::string default_ip = "127.0.0.1";

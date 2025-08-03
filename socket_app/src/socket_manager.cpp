@@ -1,4 +1,5 @@
 #include "socket_manager.hpp"
+#ifdef _WIN32
 
 SocketManager::SocketManager(const std::string& ip, const unsigned short& port) :
 connection_socket(INVALID_SOCKET), ip(ip), port(port) {
@@ -112,3 +113,5 @@ SocketManager::receiveMessages() {
     // else it was a normal message
     return { RecvResult::SUCCESS , message } ;
 }
+
+#endif

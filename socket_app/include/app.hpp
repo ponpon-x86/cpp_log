@@ -6,8 +6,13 @@
 #include <queue>
 
 #include "checker.hpp"
-#include "socket_manager.hpp"
 #include "statistician.hpp"
+
+#ifdef _WIN32
+#include "socket_manager.hpp"
+#else
+#include "linux_socket_manager.hpp"
+#endif
 
 class App {
 
