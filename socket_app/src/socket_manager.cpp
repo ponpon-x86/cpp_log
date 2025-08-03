@@ -43,7 +43,8 @@ bool SocketManager::init(const std::string& ip, const unsigned short& port) {
         InetPton(AF_INET, ip.c_str(), &client_addr.sin_addr.s_addr);
         client_addr.sin_port = htons(port);
 
-        // createSocket();
+        // the secret sause for later
+        strcpy(pongbuf, "PONG");
     }
     ready = true;
     return true;
@@ -83,7 +84,7 @@ SocketManager::receiveMessages() {
         // std::cout << "\tAttempted to recieve messages, yet the socket is invalid. Aborting.\n";
         return { RecvResult::INVALID_S , "" } ;
     }
-
+    char recvbuf[512] = {0};
     auto recv_result = recv(connection_socket, recvbuf, sizeof(recvbuf), 0);
     if (recv_result == SOCKET_ERROR) {
         closeSocket();
@@ -95,8 +96,19 @@ SocketManager::receiveMessages() {
         closeSocket();
         return { RecvResult::C_CLOSED , "" } ;
     }
-    recvbuf[recv_result] = '\0';
     std::string message = recvbuf;
-    // std::cout << "\tBytes received: " << recv_result << "\nReceived data: " << recvbuf << "\n";
+    
+    // now to check whether the server just wants to know if we are alive or it was a message
+    if(message == "PING") {
+        // server is poking us with a stick
+        if (send(connection_socket, pongbuf, sizeof(pongbuf), 0) == SOCKET_ERROR) {
+            closeSocket();
+            std::string error = std::to_string(WSAGetLastError());
+            return { RecvResult::S_ERROR , error } ;
+        }
+        return { RecvResult::PING , "" } ;
+    }
+    
+    // else it was a normal message
     return { RecvResult::SUCCESS , message } ;
 }

@@ -40,6 +40,12 @@ class Core {
     common::Priority getDefaultPriority();
     bool isLoggingToFile();
 
+    // should be launched in a thread
+    void listen();
+    // should be launched in a thread
+    void pingPong();
+    
+    // the "send" function
     void log(const std::string&);
 
     private:

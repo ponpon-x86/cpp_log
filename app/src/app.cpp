@@ -25,12 +25,32 @@ checker(argc, argv) {
     run();
 }
 
+void App::listenJob() {
+    while(true) {
+        core.listen();
+        // not to busy it
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
+}
+
+void App::pingPongJob() {
+    while(true) {
+        core.pingPong();
+        // the ping pong interval
+        std::this_thread::sleep_for(std::chrono::seconds(10));
+    }
+}
+
 void App::run() {
     std::string input;
+    
+    listenThread = std::thread(&App::listenJob, this);
+    pingPongThread = std::thread(&App::pingPongJob, this);
 
     while (running) {
         instructions();
 
+        // blocking.
         std::getline(std::cin, input);
 
         if(commandFilter(input)) continue;

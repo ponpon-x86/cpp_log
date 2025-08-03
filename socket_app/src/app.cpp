@@ -60,10 +60,14 @@ void App::socketThreadJob() {
         auto flag = result.first;
         auto message = result.second;
 
+        // if this was ping, it's just that we were bothered is all
+        if (flag == SocketManager::RecvResult::PING)
+            continue;
         // if everything's alright, push the message
         if (flag == SocketManager::RecvResult::SUCCESS) {
             {
                 std::unique_lock<std::mutex> lock(mutex);
+                statistician.newMessage(message);
                 message_queue.push(message);
                 continue;
             }
@@ -110,7 +114,7 @@ void App::run() {
 void App::info() {
     // clear screen
     #ifdef _WIN32 // windows
-        // system("cls");
+        system("cls");
         HANDLE hStdout = GetStdHandle(STD_OUTPUT_HANDLE); // Get a handle to the console output
         COORD position = {0, 0}; // Define the desired cursor coordinates
         SetConsoleCursorPosition(hStdout, position);
@@ -122,13 +126,16 @@ void App::info() {
     std::cout << "\33[2K\r" << "\tTrying to connect to: " << net_data.ip << ":" << net_data.port << "\n";
     std::cout << "\33[2K\r" << "\tMessages to statistics update: " << messages_left << " (set to " << net_data.mtu << " messages)\n";
     std::cout << "\33[2K\r" << "\tSeconds to statistics update: " << std::stoi(this->net_data.timeout) - statistician.getClockDif() << " (set to " << net_data.timeout << "s)\n\n";
-    std::cout << "\tLast message:\n";
+    std::cout << "\tLast entry:\n";
     {
         std::unique_lock<std::mutex> lock(mutex);
         if(!message_queue.empty()) {
             last_message = message_queue.front();
             message_queue.pop();
-            --messages_left;
+
+            auto numerical_check = --messages_left;
+            if(statistician.shouldUpdate(numerical_check))
+                statistician.update();
         }
     }
     std::cout << "\33[2K\r" << "\t" << last_message << "\n";

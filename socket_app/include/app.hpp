@@ -58,6 +58,6 @@ class App {
 
     // the checker will provide these
     common::NetData net_data;
-    std::atomic<unsigned> messages_left;
+    std::atomic<long long> messages_left;
     unsigned timer;
 };

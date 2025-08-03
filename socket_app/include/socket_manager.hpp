@@ -34,7 +34,8 @@ class SocketManager {
         INVALID_S,
         S_ERROR,
         C_CLOSED,
-        SUCCESS
+        SUCCESS,
+        PING
     };
 
     // starts up the socket thing, fills the addr info
@@ -52,7 +53,8 @@ class SocketManager {
     bool ready = false;
     bool connected = false;
 
-    char recvbuf[512];
+    char pongbuf[512] = {0}; // init with null bytes
+    const int message_length = 512;
 
     #ifdef _WIN32
         sockaddr_in client_addr = {};

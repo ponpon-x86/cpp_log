@@ -16,10 +16,14 @@ void Statistician::update() {
     message_average_length.update();
 }
 
+#include <iostream>
+#include <fstream>
+
 void Statistician::newMessage(const std::string& message) {
-    // first match should be message text
-    // second would be the text " (priority: "
-    // so we need the third one
+    // first match should be "message: " text
+    // second should be message body
+    // third would be the text " (priority: "
+    // so we need the fourth one
     ++messages_since_update;
 
     // i guess i'll use "body" as message length,
@@ -27,12 +31,17 @@ void Statistician::newMessage(const std::string& message) {
     std::string body;
     std::string priority;
     if(std::regex_match(message, match, regex)) {
-        body = match[1].str();
-        priority = match[3].str();
+        body = match[2].str();
+        priority = match[4].str();
     }
 
     // now to... assign things
     ++messages_total.current;
+    std::ofstream debug("ultra.txt");
+    debug << "message str: " << message << "\n";
+    debug << "message: " << "[" << body << "]" << "[" << priority << "]" << "\n";
+    debug.close();
+    //exit(1);
     if (priority == "regular") ++messages_priority[Priority::REGULAR].current;
     if (priority == "important") ++messages_priority[Priority::IMPORTANT].current;
     if (priority == "critical") ++messages_priority[Priority::CRITICAL].current;
@@ -92,14 +101,17 @@ long long Statistician::getClockDif() {
     return std::chrono::duration_cast<std::chrono::seconds>(end_time - start_time).count();
 }
 
-#include <iostream>
+bool Statistician::shouldUpdate(long long& mtu) {
+    if (messages_since_update >= mtu) {
+        messages_since_update = 0;
+        return true;
+    }
+    return false;
+}
 
 bool Statistician::shouldUpdate(long long& mtu, long long& timeout) { 
     bool should = false;
-    if (messages_since_update >= mtu) {
-        messages_since_update = 0;
-        should = true;
-    }
+    should = shouldUpdate(mtu);
 
     end_time = Clock::now();
 

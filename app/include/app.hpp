@@ -25,6 +25,11 @@ class App {
     // these call correlating core methods
     void specifyPriority();
 
+    void listenJob();
+    void pingPongJob();
+    std::thread listenThread;
+    std::thread pingPongThread;
+
     Pool pool;
     Checker checker;
     Core core;

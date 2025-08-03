@@ -63,6 +63,14 @@ Core::handledInput Core::handleInput(const std::string& input) {
     return handled;
 }
 
+void Core::listen() {
+    socket_logger.waitForClient();
+}
+
+void Core::pingPong() {
+    socket_logger.pingClient();
+}
+
 // log message
 void Core::log(const std::string& input) {
     // regex-match the user input

@@ -58,7 +58,9 @@ class Statistician {
         return message_average_length.old;
     }
 
+    bool shouldUpdate(long long& mtu);
     bool shouldUpdate(long long& mtu, long long& timeout);
+
     void startClock();
     long long getClockDif();
 
@@ -108,7 +110,7 @@ class Statistician {
 
     // once again i turn to my crippling addiction
     std::smatch match;
-    std::regex regex = std::regex(R"((.*)( \s*\(priority:\s*)([a-zA-Z]+)(.*$))");
+    std::regex regex = std::regex(R"((message:\s)(.*)( \s*\(priority:\s*)([a-zA-Z]+)(.*\s*$))");
 
     // our clock
     std::chrono::steady_clock::time_point start_time;

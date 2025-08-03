@@ -18,6 +18,7 @@ socket instruments
 #endif
 
 #include <iostream>
+#include <mutex>
 
 class SocketLogger {
 
@@ -27,17 +28,27 @@ class SocketLogger {
     SocketLogger(const std::string&, const unsigned short&);
     ~SocketLogger();
 
+    // non-blocking
     void waitForClient();
     void write(const std::string&, const common::Priority&);
     void init(const std::string& ip, const unsigned short& port);
 
-    bool hasClient() { return client_socket != INVALID_SOCKET; };
-    void closeClient();
+    /*
+        it's impossible to rely on sends to determine whether
+        the client disconnected, so we'll poke them with a stick
+    */
+    void pingClient();
 
     private:
 
     bool ready = false;
     void setupListeningSocket();
+    bool hasClient() { 
+        // fine, i'll put mutex on it
+        std::lock_guard<std::mutex> lock(mutex);
+        return client_socket != INVALID_SOCKET; 
+    };
+    void closeClient();
 
     #ifdef _WIN32
         sockaddr_in server_addr = {};
@@ -46,5 +57,10 @@ class SocketLogger {
         SOCKET client_socket;
         unsigned short port;
     #endif
+
+    char pingbuf[512] = {0}; // init with null bytes
+    const int message_length = 512;
+
+    std::mutex mutex;
 
 };

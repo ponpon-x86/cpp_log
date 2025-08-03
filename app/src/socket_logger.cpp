@@ -21,6 +21,9 @@ void SocketLogger::init(const std::string& ip, const unsigned short& port) {
         listen_socket = INVALID_SOCKET;
 
         setupListeningSocket();
+
+        // secret sause
+        strcpy(pingbuf, "PING");
     }
     ready = true;
 }
@@ -46,21 +49,89 @@ void SocketLogger::setupListeningSocket() {
     if (listen(listen_socket, SOMAXCONN) == SOCKET_ERROR) {
         std::cout << "\tListen failed.\n";
     }
+
+    u_long mode = 1;
+    ioctlsocket(listen_socket, FIONBIO, &mode); // set to non-blocking
 }
 
 void SocketLogger::waitForClient() {
     if (hasClient()) {
-        std::cout << "\tAlready has a client. No need to wait for them.\n";
+        // std::cout << "\tAlready has a client. No need to wait for them.\n";
         return;
     }
 
-    std::cout << "\tWaiting for a client to connect...\n";
-    client_socket = accept(listen_socket, nullptr, nullptr);
-    if (client_socket == INVALID_SOCKET) {
-        std::cout << "\tAccept failed.\n";
+    // std::cout << "\tWaiting for a client to connect...\n";
+    {
+        std::unique_lock<std::mutex> lock(mutex);
+        client_socket = accept(listen_socket, nullptr, nullptr);
+        if (client_socket == INVALID_SOCKET) {
+            // there's this "error", WSAEWOULDBLOCK, which is not an error, really
+            int err = WSAGetLastError();
+            if (err == WSAEWOULDBLOCK) {
+                // std::cout << "\tNo client connected yet. Still waiting...\n";
+            } else {
+                // std::cout << "\tAccept failed.\n";
+            }
+
+            return;
+        }
     }
 
-    std::cout << "\tClient connected.\n";
+    // std::cout << "\tClient connected.\n";
+}
+
+void SocketLogger::pingClient() {
+    // so since write() will be running in another thread, i have a strong
+    // desire to mutex this whole thing, so that client_socket won't
+    // suddenly explode or something
+    std::lock_guard<std::mutex> lock(mutex);
+
+    // first, ping the client
+    // "hey, are you still here?"
+    send(client_socket, pingbuf, sizeof(pingbuf), 0);
+
+    // we'll need the file descriptor set for select
+    // since i don't want to wait in case recv blocks
+    fd_set readfds;
+    FD_ZERO(&readfds);
+    FD_SET(client_socket, &readfds);
+    
+    // set a 3 second timeout: if nothing comes back from the client
+    // within this window, we'll assume they are DEAD.
+    struct timeval timeout;
+    timeout.tv_sec = 3;
+    timeout.tv_usec = 0;
+
+    // client_socket + 1 so that select checks descriptors from 0 to client_socket
+    auto select_result = select(client_socket + 1, &readfds, NULL, NULL, &timeout);
+
+    // socket marked as ready to read and select is positive??
+    if (select_result > 0 && FD_ISSET(client_socket, &readfds)) {
+        // we read the data from client
+        char recvbuf[512] = {0};
+        auto recv_result = recv(client_socket, recvbuf, sizeof(recvbuf), 0);
+        if (recv_result <= 0) {
+            // client disconnected
+            closeClient();
+            return;
+        }
+        std::string message = recvbuf;
+        if (message == "PONG") {
+            // the client is alive
+            
+            // ...i don't know what to do with this information yet
+        } else {
+            // the client is not supposed to send anything to us
+            // kill him
+            closeClient();
+            return;
+        }
+    } else {
+        // timeout
+        // they might as well be dead
+        closeClient();
+        return;
+    }
 }
 
 void SocketLogger::write(const std::string& message, const common::Priority& priority) {
@@ -70,12 +141,20 @@ void SocketLogger::write(const std::string& message, const common::Priority& pri
     }
 
     std::string str = "message: " + message + " (priority: " + common::priorityToString(priority) + ") [" + common::getTime() + "]\n";
-    const char* sendbuf = str.c_str();
-    int sendbuflen = strlen(sendbuf);
+    
+    // safely copy that to buffer
+    char sendbuf[512] = {0};
+    auto chars_to_copy = ((str.length()) < (message_length - 1)) ? (str.length()) : (message_length - 1);
+    str.copy(sendbuf, chars_to_copy, 0);
+    // just in case
+    sendbuf[chars_to_copy] = '\0';
 
-    if (send(client_socket, sendbuf, sendbuflen, 0) == SOCKET_ERROR) {
-        std::cout << "\tSend failed. Closing client.\n";
-        closeClient();
+    {
+        std::unique_lock<std::mutex> lock(mutex);
+        if(send(client_socket, sendbuf, sizeof(sendbuf), 0) == SOCKET_ERROR) {
+            std::cout << "\tSend failed. Closing client.\n";
+            closeClient();
+        }
     }
 }
 
