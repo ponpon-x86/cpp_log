@@ -30,6 +30,9 @@ class App {
     void displayState();
     void statistics();
 
+    // this one moves cursor
+    void goToXY(short int x, short int y);
+
     // since we need to update after certain amount of time
 
     // ok this is tricky, since socket manager has to do blocking stuff, 
@@ -53,7 +56,7 @@ class App {
     std::mutex mutex;
     std::queue<std::string> message_queue;
     
-    std::string last_message;
+    std::string last_message = "\n";
     std::string last_error;
 
     // the checker will provide these

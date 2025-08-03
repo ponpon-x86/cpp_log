@@ -111,18 +111,22 @@ void App::run() {
     }
 }
 
+void App::goToXY(short x, short y) {
+    HANDLE hStdout = GetStdHandle(STD_OUTPUT_HANDLE); // Get a handle to the console output
+    COORD position = {x, y}; // Define the desired cursor coordinates
+    SetConsoleCursorPosition(hStdout, position);
+}
+
 void App::info() {
     // clear screen
     #ifdef _WIN32 // windows
         // system("cls");
-        HANDLE hStdout = GetStdHandle(STD_OUTPUT_HANDLE); // Get a handle to the console output
-        COORD position = {0, 0}; // Define the desired cursor coordinates
-        SetConsoleCursorPosition(hStdout, position);
+        goToXY(0, 0);
     #else // will assume unix-based whatever.
         system("clear");
     #endif
 
-    std::cout << "\n\tConnection parameters:\n";
+    std::cout << "\n\tParameters:\n";
     std::cout << "\33[2K\r" << "\tTrying to connect to: " << net_data.ip << ":" << net_data.port << "\n";
     std::cout << "\33[2K\r" << "\tMessages to statistics update: " << messages_left << " (set to " << net_data.mtu << " messages)\n";
     std::cout << "\33[2K\r" << "\tSeconds to statistics update: " << std::stoi(this->net_data.timeout) - statistician.getClockDif() << " (set to " << net_data.timeout << "s)\n\n";
