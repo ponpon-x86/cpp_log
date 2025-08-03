@@ -102,7 +102,7 @@ void App::run() {
     #ifdef _WIN32 // windows
         system("cls");
     #else
-        system("clear")
+        system("clear");
     #endif
 
     while (true) {
