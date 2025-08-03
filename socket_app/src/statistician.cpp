@@ -16,9 +16,6 @@ void Statistician::update() {
     message_average_length.update();
 }
 
-#include <iostream>
-#include <fstream>
-
 void Statistician::newMessage(const std::string& message) {
     // first match should be "message: " text
     // second should be message body
@@ -37,10 +34,6 @@ void Statistician::newMessage(const std::string& message) {
 
     // now to... assign things
     ++messages_total.current;
-    std::ofstream debug("ultra.txt");
-    debug << "message str: " << message << "\n";
-    debug << "message: " << "[" << body << "]" << "[" << priority << "]" << "\n";
-    debug.close();
     //exit(1);
     if (priority == "regular") ++messages_priority[Priority::REGULAR].current;
     if (priority == "important") ++messages_priority[Priority::IMPORTANT].current;

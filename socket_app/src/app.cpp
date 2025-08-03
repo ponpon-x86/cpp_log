@@ -114,7 +114,7 @@ void App::run() {
 void App::info() {
     // clear screen
     #ifdef _WIN32 // windows
-        system("cls");
+        // system("cls");
         HANDLE hStdout = GetStdHandle(STD_OUTPUT_HANDLE); // Get a handle to the console output
         COORD position = {0, 0}; // Define the desired cursor coordinates
         SetConsoleCursorPosition(hStdout, position);
