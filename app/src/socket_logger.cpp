@@ -49,6 +49,11 @@ void SocketLogger::setupListeningSocket() {
 }
 
 void SocketLogger::waitForClient() {
+    if (hasClient()) {
+        std::cout << "\tAlready has a client. No need to wait for them.\n";
+        return;
+    }
+
     std::cout << "\tWaiting for a client to connect...\n";
     client_socket = accept(listen_socket, nullptr, nullptr);
     if (client_socket == INVALID_SOCKET) {
@@ -59,14 +64,13 @@ void SocketLogger::waitForClient() {
 }
 
 void SocketLogger::write(const std::string& message, const common::Priority& priority) {
-    // i don't think the mutex is needed?
-    // std::lock_guard<std::mutex> lock(this->mutex);
     if (!hasClient()) {
         std::cout << "\tAttempted to write to socket, yet there's no client. Aborting.\n";
         return;
     }
 
-    const char* sendbuf = "\tHello! Hello!\n";
+    std::string str = "message: " + message + " (priority: " + common::priorityToString(priority) + ") [" + common::getTime() + "]\n";
+    const char* sendbuf = str.c_str();
     int sendbuflen = strlen(sendbuf);
 
     if (send(client_socket, sendbuf, sendbuflen, 0) == SOCKET_ERROR) {

@@ -23,6 +23,7 @@ Checker::Checker(const int& argc, char** argv) {
             this->net_data.timeout = argv[3]; 
             examineIpPortString(ip_port);
             checkup();
+            break;
         }
         default:
             explaination += "\tError: too many command-line arguments provided.\n";

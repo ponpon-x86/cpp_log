@@ -37,7 +37,7 @@ void App::socketThreadJob() {
         auto create_result = socket_manager.createSocket();
         if (create_result == SocketManager::SocketOperationResult::FAILURE) {
             state = ConnectionState::FAILED_CREATION;
-            // the loop is tight with just continue, so... let's sleep the thread.
+            // the loop is tight with just "continue", so... let's sleep the thread.
             std::this_thread::sleep_for(std::chrono::seconds(1));
             continue;
         }
@@ -53,7 +53,7 @@ void App::socketThreadJob() {
         }
 
         state = ConnectionState::CONNECTED;
-        // this will block the loop
+        // this should block the loop
         // and the result is, well, .first() is a flag,
         // .second() is the message.
         auto result = socket_manager.receiveMessages();
@@ -119,9 +119,9 @@ void App::info() {
     #endif
 
     std::cout << "\n\tConnection parameters:\n";
-    std::cout << "\tTrying to connect to: " << net_data.ip << ":" << net_data.port << "\n";
-    std::cout << "\tMessages to statistics update: " << messages_left << " (set to " << net_data.mtu << " messages)\n";
-    std::cout << "\tSeconds to statistics update: " << std::stoi(this->net_data.timeout) - statistician.getClockDif() << " (set to " << net_data.timeout << "s)\n\n";
+    std::cout << "\33[2K\r" << "\tTrying to connect to: " << net_data.ip << ":" << net_data.port << "\n";
+    std::cout << "\33[2K\r" << "\tMessages to statistics update: " << messages_left << " (set to " << net_data.mtu << " messages)\n";
+    std::cout << "\33[2K\r" << "\tSeconds to statistics update: " << std::stoi(this->net_data.timeout) - statistician.getClockDif() << " (set to " << net_data.timeout << "s)\n\n";
     std::cout << "\tLast message:\n";
     {
         std::unique_lock<std::mutex> lock(mutex);
@@ -131,12 +131,12 @@ void App::info() {
             --messages_left;
         }
     }
-    std::cout << "\t" << last_message << "\n";
+    std::cout << "\33[2K\r" << "\t" << last_message << "\n";
 }
 
 void App::displayState() {
     std::cout << "\tConnection state:\n";
-    std::cout << "\t > ";
+    std::cout << "\33[2K\r" << "\t > ";
     switch (state)
     {
         case ConnectionState::IDLE:
@@ -182,9 +182,13 @@ void App::statistics() {
     std::cout << "\tTotal critical messages: " << std::get<2>(priority_messages) << "\n";
     std::cout << "\tTotal messages in last hour: " << statistician.getLastHourMessagesCount() << "\n";
     
-    std::cout << "\tMax message length: " << statistician.getMaxMessageLength() << "\n";
-    std::cout << "\tMin message length: " << statistician.getMinMessageLength() << "\n";
-    std::cout << "\tAverage message length: " << statistician.getAverageMessageLength() << "\n\n";
+    auto max = statistician.getMaxMessageLength();
+    auto min = statistician.getMinMessageLength();
+    auto average = statistician.getAverageMessageLength();
+
+    std::cout << "\33[2K\r" << "\tMax message length: " << (max < 0 ? "[no messages yet]" : std::to_string(max)) << "\n";
+    std::cout << "\33[2K\r" << "\tMin message length: " << (min < 0 ? "[no messages yet]" : std::to_string(min)) << "\n";
+    std::cout << "\33[2K\r" << "\tAverage message length: " << (average < 0 ? "[no messages yet]" : std::to_string(average)) << "\n\n";
 
     auto timeout = std::stoi(this->net_data.timeout);
     auto long_timeout = static_cast<long long>(timeout);
