@@ -30,7 +30,7 @@ SocketManager::createSocket() {
 }
 
 bool SocketManager::init(const std::string& ip, const unsigned short& port) {
-    if (!ready) {
+    if (!ready) {        
         connection_socket = INVALID_SOCKET;
         this->ip = ip; this->port = port;
 

@@ -101,6 +101,8 @@ void App::run() {
     statistician.startClock();
     #ifdef _WIN32 // windows
         system("cls");
+    #else
+        system("clear")
     #endif
 
     while (true) {
