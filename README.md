@@ -111,6 +111,8 @@ Once running, the app allows to:
 
 > **_NOTE:_** There may be a slight delay in detecting if the client (**socket_app**) has disconnected. This is due to the ping-pong mechanism operating at large fixed intervals (every few seconds, not milliseconds).
 
+> **_NOTE:_** On Linux, the terminal may produce escape sequences *(e.g. when using arrow keys)*. These sequences will be automatically filtered out of messages to ensure consistent and intended behaviour.
+
 ### Running **socket_app**
 
 You must provide **three command-line arguments**:
