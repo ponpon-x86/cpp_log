@@ -6,6 +6,29 @@
 
 namespace common {
 
+    namespace socket {
+        enum class ClientWaitResult {
+            HAS_CLIENT,
+            NO_CONNECTION_YET,
+            FAILURE,
+            SUCCESS
+        };
+
+        enum class PingResult {
+            NO_CLIENT,
+            CLIENT_DISCONNECTED,
+            CLIENT_ALIVE,
+            TERMINATED,
+            TIMEOUT,
+        };
+
+        enum class WriteResult {
+            NO_CLIENT,
+            FAILURE,
+            SUCCESS
+        };
+    };
+
     enum class Priority {
         REGULAR,
         IMPORTANT,

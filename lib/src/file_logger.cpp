@@ -16,8 +16,11 @@ bool FileLogger::open(const std::string& filename) {
     return false;
 }
 
-void FileLogger::write(const std::string& message, const common::Priority& priority) {
+bool FileLogger::write(const std::string& message, const common::Priority& priority) {
     std::lock_guard<std::mutex> lock(this->mutex);
+    if (!isFileOpen())
+        return false;
     file << "message: " << message << " (priority: " << common::priorityToString(priority) << ") [" << common::getTime() << "]\n";
     file.flush();
+    return true;
 }

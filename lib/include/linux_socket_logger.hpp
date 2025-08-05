@@ -29,15 +29,16 @@ class SocketLogger {
     ~SocketLogger();
 
     // non-blocking
-    void waitForClient();
-    void write(const std::string&, const common::Priority&);
+    common::socket::ClientWaitResult waitForClient();
+    common::socket::WriteResult write(const std::string&, const common::Priority&);
     void init(const std::string& ip, const unsigned short& port);
-
+    bool isInited() { return ready; }
+    
     /*
         it's impossible to rely on sends to determine whether
         the client disconnected, so we'll poke them with a stick
     */
-    void pingClient();
+    common::socket::PingResult pingClient();
 
     private:
 

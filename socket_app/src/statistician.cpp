@@ -94,7 +94,7 @@ long long Statistician::getClockDif() {
     return std::chrono::duration_cast<std::chrono::seconds>(end_time - start_time).count();
 }
 
-bool Statistician::shouldUpdate(long long& mtu) {
+bool Statistician::shouldUpdateByMessages(long long& mtu) {
     if (messages_since_update >= mtu) {
         messages_since_update = 0;
         return true;
@@ -102,15 +102,12 @@ bool Statistician::shouldUpdate(long long& mtu) {
     return false;
 }
 
-bool Statistician::shouldUpdate(long long& mtu, long long& timeout) { 
-    bool should = false;
-    should = shouldUpdate(mtu);
-
+bool Statistician::shouldUpdateByTimeout(long long& timeout) { 
     end_time = Clock::now();
 
     if (timeout - getClockDif() <= 0) {
         resetClock();
-        should = true;
+        return true;
     }
-    return should;
+    return false;
 }

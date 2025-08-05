@@ -132,9 +132,12 @@ void App::info() {
             last_message = message_queue.front();
             message_queue.pop();
 
-            auto numerical_check = --messages_left;
-            if(statistician.shouldUpdate(numerical_check))
+            --messages_left;
+            auto mtu_integer = static_cast<long long>(std::stoi(this->net_data.mtu));
+            if(statistician.shouldUpdateByMessages(mtu_integer)) {
+                messages_left = std::stoi(this->net_data.mtu);
                 statistician.update();
+            }
         }
     }
     std::cout << "\33[2K\r" << "\t" << last_message << "\n";
@@ -198,11 +201,8 @@ void App::statistics() {
 
     auto timeout = std::stoi(this->net_data.timeout);
     auto long_timeout = static_cast<long long>(timeout);
-    
-    auto mtu = std::stoi(this->net_data.mtu);
-    auto long_mtu = static_cast<long long>(mtu);
 
-    if (statistician.shouldUpdate(long_mtu, long_timeout)) {
+    if (statistician.shouldUpdateByTimeout(long_timeout)) {
         statistician.update();
     }
 }

@@ -3,15 +3,13 @@
 // constuctors
 
 Core::Core(const std::string& filename, const common::Priority& priority, const std::string& ip, const unsigned short& port) :
-file_logger(filename), socket_logger(ip == "" ? default_ip : ip, port == 0 ? default_port : port) {
-    this->config = { filename , priority };
-    initialized = true;
+file_logger(filename), socket_logger(ip == "" ? default_ip : ip, port == 0 ? default_port : port) {  
+    init(filename, priority, ip, port);
 }
 
 Core::Core(const common::CoreConfig& config, const std::string& ip, const unsigned short& port) :
 file_logger(config.log_file_name), socket_logger(ip == "" ? default_ip : ip, port == 0 ? default_port : port) {
-    this->config = config;
-    initialized = true;
+    init(config, ip, port);
 }
 
 // methods
@@ -33,6 +31,7 @@ void Core::init(const common::CoreConfig& config, const std::string& ip, const u
     }
 
     socket_logger.init(ip == "" ? default_ip : ip, port == 0 ? default_port : port);
+    initialized = true;
 }
 
 Core::handledInput Core::handleInput(const std::string& input) {
@@ -71,8 +70,18 @@ void Core::pingPong() {
     socket_logger.pingClient();
 }
 
+bool Core::wasSocketWriteSuccessful(const common::socket::WriteResult& result) {
+    switch (result)
+    {
+    case common::socket::WriteResult::SUCCESS:
+        return true;
+    default:
+        return false;
+    }
+}
+
 // log message
-void Core::log(const std::string& input) {
+bool Core::log(const std::string& input) {
     // regex-match the user input
     auto handled = handleInput(input);
     auto validation = handled.priority.empty() ? false : common::validatePriority(handled.priority);
@@ -81,10 +90,12 @@ void Core::log(const std::string& input) {
     if (handled.priority.empty()) {
 
         if(file_logging)
-            file_logger.write(handled.message, this->config.priority);
-        else socket_logger.write(handled.message, this->config.priority);
-
-        return;
+            return file_logger.write(handled.message, this->config.priority);
+        else {
+            return wasSocketWriteSuccessful(
+                socket_logger.write(handled.message, this->config.priority)
+            );
+        }
     } 
     
     // if not, then
@@ -98,8 +109,10 @@ void Core::log(const std::string& input) {
         if (p_obj >= this->config.priority) {
             
             if(file_logging)
-                file_logger.write(handled.message, common::charToPriority(p));
-            else socket_logger.write(handled.message, common::charToPriority(p));
+                return file_logger.write(handled.message, common::charToPriority(p));
+            else return wasSocketWriteSuccessful(
+                socket_logger.write(handled.message, common::charToPriority(p))
+            );
 
         }
     }

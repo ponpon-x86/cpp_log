@@ -39,6 +39,7 @@ class SocketManager {
 
     // starts up the socket thing, fills the addr info
     bool init(const std::string& ip, const unsigned short& port);
+    bool isInited() { return ready; }
     SocketOperationResult establishConnection();
     // first is a flag, second is the message
     std::pair<RecvResult, std::string> receiveMessages();

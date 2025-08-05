@@ -57,9 +57,9 @@ class Statistician {
     long long getAverageMessageLength() {
         return message_average_length.old;
     }
-
-    bool shouldUpdate(long long& mtu);
-    bool shouldUpdate(long long& mtu, long long& timeout);
+    
+    bool shouldUpdateByMessages(long long& mtu);
+    bool shouldUpdateByTimeout(long long& timeout);
 
     void startClock();
     long long getClockDif();

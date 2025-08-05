@@ -60,10 +60,10 @@ void SocketLogger::setupListeningSocket() {
     }
 }
 
-void SocketLogger::waitForClient() {
+common::socket::ClientWaitResult SocketLogger::waitForClient() {
     if (hasClient()) {
         // std::cout << "\tAlready has a client. No need to wait for them.\n";
-        return;
+        return common::socket::ClientWaitResult::HAS_CLIENT;
     }
 
     // std::cout << "\tWaiting for a client to connect...\n";
@@ -76,18 +76,24 @@ void SocketLogger::waitForClient() {
             // check the errno against BOTH eagain AND ewouldblock
             if (errno == EAGAIN || errno == EWOULDBLOCK) {
                 // no client connection yet, no error though
+                return common::socket::ClientWaitResult::NO_CONNECTION_YET;
             } else {
                 // accept failed
+                return common::socket::ClientWaitResult::FAILURE;
             }
 
-            return;
+            return common::socket::ClientWaitResult::FAILURE;
         }
     }
 
     // std::cout << "\tClient connected.\n";
+    return common::socket::ClientWaitResult::SUCCESS;
 }
 
-void SocketLogger::pingClient() {
+common::socket::PingResult SocketLogger::pingClient() {
+    if (!hasClient()) {
+        return common::socket::PingResult::NO_CLIENT;
+    }
     // so since write() will be running in another thread, i have a strong
     // desire to mutex this whole thing, so that client_socket won't
     // suddenly explode or something
@@ -120,31 +126,30 @@ void SocketLogger::pingClient() {
         if (recv_result <= 0) {
             // client disconnected
             closeClient();
-            return;
+            return common::socket::PingResult::CLIENT_DISCONNECTED;
         }
         std::string message = recvbuf;
         if (message == "PONG") {
             // the client is alive
-            
-            // ...i don't know what to do with this information yet
+            return common::socket::PingResult::CLIENT_ALIVE;
         } else {
             // the client is not supposed to send anything to us
             // kill him
             closeClient();
-            return;
+            return common::socket::PingResult::TERMINATED;
         }
     } else {
         // timeout
         // they might as well be dead
         closeClient();
-        return;
+        return common::socket::PingResult::TIMEOUT;
     }
 }
 
-void SocketLogger::write(const std::string& message, const common::Priority& priority) {
+common::socket::WriteResult SocketLogger::write(const std::string& message, const common::Priority& priority) {
     if (!hasClient()) {
-        std::cout << "\tAttempted to write to socket, yet there's no client. Aborting.\n";
-        return;
+        // std::cout << "\tAttempted to write to socket, yet there's no client. Aborting.\n";
+        return common::socket::WriteResult::NO_CLIENT;
     }
 
     std::string str = "message: " + message + " (priority: " + common::priorityToString(priority) + ") [" + common::getTime() + "]\n";
@@ -159,10 +164,13 @@ void SocketLogger::write(const std::string& message, const common::Priority& pri
     {
         std::unique_lock<std::mutex> lock(mutex);
         if(send(client_socket, sendbuf, sizeof(sendbuf), 0) == SOCKET_ERROR) {
-            std::cout << "\tSend failed. Closing client.\n";
+            // std::cout << "\tSend failed. Closing client.\n";
+            return common::socket::WriteResult::FAILURE;
             closeClient();
         }
     }
+
+    return common::socket::WriteResult::SUCCESS;
 }
 
 void SocketLogger::closeClient() {

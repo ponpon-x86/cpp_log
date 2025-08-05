@@ -33,6 +33,7 @@ class Core {
     Core() = default;
     void init(const std::string&, const common::Priority&, const std::string& ip = "", const unsigned short& port = 0);
     void init(const common::CoreConfig&, const std::string& ip = "", const unsigned short& port = 0);
+    bool isInited() { return initialized; }
     
     ~Core() = default;
 
@@ -42,15 +43,17 @@ class Core {
     common::Priority getDefaultPriority();
     bool isLoggingToFile();
 
-    // should be launched in a thread
+    // good idea to launch in a thread
     void listen();
-    // should be launched in a thread
+    // good idea to launch in a thread
     void pingPong();
     
-    // the "send" function
-    void log(const std::string&);
+    // the "send" function, returns true on successful log
+    bool log(const std::string&);
 
     private:
+
+    bool wasSocketWriteSuccessful(const common::socket::WriteResult&);
 
     // doesn't make a lot of sense outside the class, hence
     // declared here
