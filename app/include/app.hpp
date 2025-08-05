@@ -18,6 +18,7 @@ class App {
     private:
 
     void run();
+    void stop();
     bool commandFilter(const std::string&);
 
     void instructions();
@@ -27,12 +28,18 @@ class App {
 
     void listenJob();
     void pingPongJob();
-    std::thread listenThread;
-    std::thread pingPongThread;
+    std::thread listen_thread;
+    std::thread ping_pong_thread;
 
     Pool pool;
     Checker checker;
     Core core;
 
     bool running = true;
+    bool pinging = true;
+    bool listening = true;
+
+    std::condition_variable cv;
+    // just so we are clear which one is it
+    std::mutex ping_pong_mutex;
 };

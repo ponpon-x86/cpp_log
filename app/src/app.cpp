@@ -26,7 +26,7 @@ checker(argc, argv) {
 }
 
 void App::listenJob() {
-    while(true) {
+    while(listening) {
         core.listen();
         // not to busy it
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
@@ -34,18 +34,23 @@ void App::listenJob() {
 }
 
 void App::pingPongJob() {
-    while(true) {
+    // felt like i need a mutex here and a regular sleep_for won't cut it,
+    // since there would be a need to wait for 10 seconds on app's exit
+    std::unique_lock<std::mutex> lock(ping_pong_mutex);
+    while(pinging) {
+        lock.unlock(); // i fear the deadlock
         core.pingPong();
+        lock.lock();
         // the ping pong interval
-        std::this_thread::sleep_for(std::chrono::seconds(10));
+        cv.wait_for(lock, std::chrono::seconds(10), [&]() { return !pinging; });
     }
 }
 
 void App::run() {
     std::string input;
     
-    listenThread = std::thread(&App::listenJob, this);
-    pingPongThread = std::thread(&App::pingPongJob, this);
+    listen_thread = std::thread(&App::listenJob, this);
+    ping_pong_thread = std::thread(&App::pingPongJob, this);
 
     while (running) {
         instructions();
@@ -61,6 +66,24 @@ void App::run() {
 
         input = "";
     }
+
+    // probably should terminate threads
+    stop();
+}
+
+void App::stop() {
+    // no problem with that,
+    listening = false;
+
+    // this one needs a nudge
+    {
+        std::unique_lock<std::mutex> lock(ping_pong_mutex);
+        pinging = false;
+    }
+    cv.notify_one();
+
+    listen_thread.join();
+    ping_pong_thread.join();
 }
 
 // this one will return true if input was special;
