@@ -145,3 +145,9 @@ Connect to 127.0.0.1:60420, update statistics every **3 messages** or every **5 
 ```bash
 ./socket_app 127.0.0.1:60420 3 5
 ```
+
+> **_NOTE:_** **socket_app** runs continuously and does not include a built-in exit command.
+> To terminate it, use one of the following methods:
+> - press `Ctrl+C` in the terminal window where it's running;
+> - use **Task Manager** (on Windows);
+> - run `kill` (on Linux) with the process ID.
