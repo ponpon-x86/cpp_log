@@ -53,6 +53,8 @@ void App::run() {
         // blocking.
         std::getline(std::cin, input);
 
+        input = common::stripEscapeCodes(input);
+
         if(commandFilter(input)) continue;
 
         pool.queue(&Core::log, std::ref(core), input);

@@ -3,6 +3,7 @@
 #include <string>
 #include <ctime>
 #include <algorithm>
+#include <regex>
 
 namespace common {
 
@@ -115,5 +116,10 @@ namespace common {
     inline bool validatePriority(std::string priority) {
         auto p = priority.front();
         return validatePriority(p);
+    }
+
+    inline std::string stripEscapeCodes(const std::string& input) {
+        const std::regex escape("\x1B\\[[0-9;]*[A-Za-z]");
+        return std::regex_replace(input, escape, "");
     }
 }
